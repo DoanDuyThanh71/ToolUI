@@ -93,8 +93,7 @@ class Ui_ReducedData(object):
 
         delta = float(self.delta.currentText())
         subprocess_process = subprocess.Popen(["python", "app.py", str(self.path), str(self.col), str(self.row), str(alpha), str(delta),str(row_selected)])
-        with open('dataAdd.txt', 'w') as f:
-            f.write(f"{self.path}, {self.col}, {self.row}, {alpha}\n")
+        
         subprocess_process.wait()
         
         self.tabAns.setRowCount(0)
