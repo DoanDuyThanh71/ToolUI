@@ -17,14 +17,18 @@ class Ui_ReducedData(object):
     def importData(self):
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(None, "Import Data", "", "CSV Files (*.csv)")
         self.path = file_path
+        data = []
         if file_path:
             file_name = os.path.basename(file_path)
             with open(file_path, 'r') as file:
                 csv_reader = csv.reader(file)
                 data = list(csv_reader)
+        
             if data:
+                
                 headers = data[0]
                 num_rows = len(data) - 1
+                num_rows_View = len(data) - 1
                 num_cols = len(headers)
                 self.col = num_cols
                 self.row = num_rows
@@ -32,9 +36,9 @@ class Ui_ReducedData(object):
                 num_decision_classes = len(decision_classes)
                 self.data = data
                 self.tabAns.setColumnCount(num_cols)
-                self.tabAns.setRowCount(num_rows)
+                self.tabAns.setRowCount(9)
                 self.tabAns.setHorizontalHeaderLabels(map(str, headers))
-                for row_idx, row_data in enumerate(data[1:]):
+                for row_idx, row_data in enumerate(data[1:10:]):
                     for col_idx, cell_value in enumerate(row_data):
                         item = QtWidgets.QTableWidgetItem(str(cell_value))
                         # Set font and background color for cells
@@ -42,7 +46,6 @@ class Ui_ReducedData(object):
                         item.setBackground(QtGui.QColor(240, 240, 240))
                         self.tabAns.setItem(row_idx, col_idx, item)
                 self.labInfor.setText(f"Data imported successfully from file: \n{file_name}.\nRows: {num_rows}\nColumns: {num_cols}\nDecision Classes: {num_decision_classes}")
-                self.labInfor.resize(num_rows, num_cols)
                 # self.labInfor.setText(f"Data imported successfully.\nRows: {num_rows}\nColumns: {num_cols}\nDecision Classes: {num_decision_classes}")
                 self.tabAns.resizeColumnsToContents()
             else:
@@ -93,16 +96,15 @@ class Ui_ReducedData(object):
 
         delta = float(self.delta.currentText())
         subprocess_process = subprocess.Popen(["python", "app.py", str(self.path), str(self.col), str(self.row), str(alpha), str(delta),str(row_selected)])
-        
         subprocess_process.wait()
-        
+                
         self.tabAns.setRowCount(0)
         with open('output.txt', 'r') as file:
             reader = csv.reader(file, delimiter='\t')
             column_names = next(reader)
             self.tabAns.setColumnCount(len(column_names))
             self.tabAns.setHorizontalHeaderLabels(column_names)
-            
+
             for row_idx, row in enumerate(reader):
                 self.tabAns.insertRow(row_idx)
                 for col_idx, cell_value in enumerate(row):
@@ -110,7 +112,11 @@ class Ui_ReducedData(object):
                     item.setFont(QtGui.QFont("Arial", 10))
                     item.setBackground(QtGui.QColor(240, 240, 240))
                     self.tabAns.setItem(row_idx, col_idx, item)
+
         num_columns = self.tabAns.columnCount()
+
+        # Set độ rộng của cột đầu tiên bằng 50% độ dài của tabAns
+        
 
         for col_idx in range(num_columns):
             header_item = self.tabAns.horizontalHeaderItem(col_idx)
@@ -118,7 +124,20 @@ class Ui_ReducedData(object):
                 font = QtGui.QFont()
                 font.setBold(True)
                 header_item.setFont(font)
-        self.tabAns.resizeColumnsToContents()
+        self.tabAns.setWordWrap(True)
+        first_column_width = round(0.4 * self.tabAns.width())
+        self.tabAns.setColumnWidth(0, first_column_width)
+        self.tabAns.setColumnWidth(1, round(0.1 * self.tabAns.width()))
+        self.tabAns.setColumnWidth(2, round(0.15 * self.tabAns.width()))
+        self.tabAns.setColumnWidth(3, round(0.15 * self.tabAns.width()))
+        self.tabAns.setColumnWidth(4, round(0.0932 * self.tabAns.width()))
+        self.tabAns.setColumnWidth(5, round(0.0932* self.tabAns.width()))
+
+    
+        
+        
+        # self.tabAns.resizeColumnsToContents()
+
 
 
 
@@ -199,7 +218,7 @@ class Ui_ReducedData(object):
         
         # Information Label
         self.labInfor = QtWidgets.QLabel(parent=self.centralwidget)
-        self.labInfor.setGeometry(QtCore.QRect(950, 80, 301, 81))
+        self.labInfor.setGeometry(QtCore.QRect(950, 80, 350, 100))
         font = QtGui.QFont()
         font.setFamily("Tahoma")
         font.setPointSize(12)
@@ -209,7 +228,7 @@ class Ui_ReducedData(object):
         
         # Table Widget
         self.tabAns = QtWidgets.QTableWidget(parent=self.centralwidget)
-        self.tabAns.setGeometry(QtCore.QRect(30, 240, 1240, 341))
+        self.tabAns.setGeometry(QtCore.QRect(30, 240, 1230, 341))
         self.tabAns.setObjectName("tabAns")
         self.tabAns.setColumnCount(0)
         self.tabAns.setRowCount(0)
