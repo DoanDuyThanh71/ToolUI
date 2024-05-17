@@ -1,0 +1,2 @@
+Reduct	Size of the reduct	Acc_O ± std_O	Acc_F ± std_F	Runtime	Alpha	Dis_Tg	Row_select	Delta
+[48, 23, 70, 9, 34, 71, 33, 81, 0, 60, 40, 22, 53, 82, 29, 66, 43, 54, 35, 13, 88, 46, 61, 38, 25, 1]	26	0.867 ± 0.09	0.867 ± 0.094	0.39	0.3	0.3892496744791667	180	0.01

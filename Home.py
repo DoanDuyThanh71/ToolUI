@@ -2,20 +2,20 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from ReducedData import Ui_ReducedData
 from Reinforcement import Ui_Reinforcement
 
+
 class Ui_MainWindow(object):
-    
+
     def openReducedData(self):
         self.window = QtWidgets.QMainWindow()
         self.ui = Ui_ReducedData()
         self.ui.setupUi(self.window)
         self.window.show()
-        
+
     def openReinforcement(self):
         self.window = QtWidgets.QMainWindow()
         self.ui = Ui_Reinforcement()
         self.ui.setupUi(self.window)
         self.window.show()
-    
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -25,7 +25,9 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName("centralwidget")
         self.label = QtWidgets.QLabel(parent=self.centralwidget)
         self.label.setGeometry(QtCore.QRect(20, 20, 751, 20))
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.label.sizePolicy().hasHeightForWidth())
@@ -43,7 +45,9 @@ class Ui_MainWindow(object):
         self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label.setWordWrap(True)
         self.label.setObjectName("label")
-        self.btnReducedData = QtWidgets.QPushButton(parent=self.centralwidget, clicked= lambda: self.openReducedData())
+        self.btnReducedData = QtWidgets.QPushButton(
+            parent=self.centralwidget, clicked=lambda: self.openReducedData()
+        )
         self.btnReducedData.setGeometry(QtCore.QRect(180, 150, 431, 31))
         font = QtGui.QFont()
         font.setFamily("Tahoma")
@@ -52,7 +56,9 @@ class Ui_MainWindow(object):
         font.setWeight(75)
         self.btnReducedData.setFont(font)
         self.btnReducedData.setObjectName("btnReducedData")
-        self.btnReinforcement = QtWidgets.QPushButton(parent=self.centralwidget, clicked=lambda: self.openReinforcement())
+        self.btnReinforcement = QtWidgets.QPushButton(
+            parent=self.centralwidget, clicked=lambda: self.openReinforcement()
+        )
         self.btnReinforcement.setGeometry(QtCore.QRect(180, 270, 431, 31))
         font = QtGui.QFont()
         font.setFamily("Tahoma")
@@ -71,22 +77,28 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
-        
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.label.setText(_translate("MainWindow", "Chương trình rút gọn thuộc tính trên bảng quyết định ") )
-        self.btnReducedData.setText(_translate("MainWindow", "Thuật toán tìm tập rút gọn trên bảng tĩnh"), )
+        self.label.setText(
+            _translate(
+                "MainWindow", "Chương trình rút gọn thuộc tính trên bảng quyết định "
+            )
+        )
+        self.btnReducedData.setText(
+            _translate("MainWindow", "Thuật toán tìm tập rút gọn trên bảng tĩnh"),
+        )
         self.btnReinforcement.setText(_translate("MainWindow", "Thuật toán gia tăng"))
-    
+
     def run_app(self):
         subprocess.Popen(["python", "app.py"])
-    
+
 
 if __name__ == "__main__":
     import sys
     import subprocess
+
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()

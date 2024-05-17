@@ -99,7 +99,10 @@ class Ui_ReducedData(object):
         subprocess_process.wait()
                 
         self.tabAns.setRowCount(0)
-        with open('output.txt', 'r') as file:
+        file_name_with_ext = os.path.basename(self.path)
+        file_name, _ = os.path.splitext(file_name_with_ext)
+        output_file_name = file_name + '_output.txt'   
+        with open(output_file_name, 'r') as file:
             reader = csv.reader(file, delimiter='\t')
             column_names = next(reader)
             self.tabAns.setColumnCount(len(column_names))
@@ -253,9 +256,10 @@ class Ui_ReducedData(object):
         self.btnProcess.setText(_translate("mainWindow", "Process"))
         self.label.setText(_translate("mainWindow", "Alpha Level"))
         self.label_2.setText(_translate("mainWindow", "Rows Selected"))
-        self.delta.setItemText(0, _translate("mainWindow", "0"))
+        self.delta.setItemText(0, _translate("mainWindow", "0.01"))
         self.delta.setItemText(1, _translate("mainWindow", "0.1"))
-        self.delta.setItemText(2, _translate("mainWindow", "0.01"))
+        self.delta.setItemText(2, _translate("mainWindow", "0"))
+        
         
 
 if __name__ == "__main__":

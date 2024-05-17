@@ -153,7 +153,6 @@ class IntuitiveFuzzy(object):
 		dis = (1 / ((self.num_objs)**2)) * (IFRM_cardinality - IFRM_d_cardinality)
 		return dis
 	
-
 	def incre_distance(self, M):
 		tp1 = (self.num_prev)** 2 * self.dis_tg
 		

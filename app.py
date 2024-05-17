@@ -21,7 +21,6 @@ arr_data = [
     ]
 min_max_scaler = preprocessing.MinMaxScaler()
 
-# 0 0.01 0.001
 
 def preprocessing(name_file, att_nominal_cate):
     DS  = np.genfromtxt(name_file, delimiter=",", dtype=object)[:, :]
@@ -74,7 +73,7 @@ def main(arr_data):
     B = []
     # F = []
     num_prev = 0
-    dis_tg = 0
+    dis_tg = 0 
     
     X = [alpha]
     # Muc alpha
@@ -83,61 +82,56 @@ def main(arr_data):
     for arr in arr_data:
         for x in X:
             F = []
-            DS = preprocessing(arr[0], arr[1])             
-            st = time.time()
-            DS = split_data_icr(DS,row_selected)
-            # print(DS)
-            # step 1: Compute IFPDs on original dataset.
-            IF = IntuitiveFuzzy(DS[0], arr[0], arr[1], arr[2], x, F, num_prev, dis_tg)
-            F, dis_tg, time_filter = IF.filter()
-            print("F", F)
-            sc = IF.evaluate(arr[0], F, time_filter)
-            a_sc.append(sc)
-            # os.system('cls')
-            print (tabulate(a_sc, headers='firstrow', tablefmt='pipe', stralign='center'))
-            # os.system('cls')
-            U = DS[0]
-            column_order = ["Reduct", "Size of the reduct", "Acc_O ± std_O", "Acc_F ± std_F", "Runtime", "Alpha"]            
-            column_order = ["Reduct", "Size of the reduct", "Acc_O ± std_O", "Acc_F ± std_F", "Runtime", "Alpha"]            
-            with open('output.txt', 'w') as f:
-                f.write('\t'.join(column_order) + '\n')
-                for i, row in enumerate(a_sc):  
-                    if i >= 1: 
-                        f.write("{}\t{}\t{}\t{}\t{}\t{}\n".format(row[8], row[2], str(row[3]) + " ± " + str(row[4]), str(row[5]) + " ± " + str(row[6]), row[7], row[9]))
+    DS = preprocessing(arr[0], arr[1])             
+    st = time.time()
+    DS = split_data_icr(DS,row_selected)
+    # step 1: Compute IFPDs on original dataset.
+    IF = IntuitiveFuzzy(DS[0], arr[0], arr[1], arr[2], x, F, num_prev, dis_tg)
+    F, dis_tg, time_filter = IF.filter()
+    print("F", F)
+    sc = IF.evaluate(arr[0], F, time_filter)
+    a_sc.append(sc)
+    # os.system('cls')
+    print (tabulate(a_sc, headers='firstrow', tablefmt='pipe', stralign='center'))
+    # os.system('cls')
+    U = DS[0]
+    column_order = ["Reduct", "Size of the reduct", "Acc_O ± std_O", "Acc_F ± std_F", "Runtime", "Alpha", "Dis_Tg","Row_select", "Delta"]          
+    file_name = os.path.splitext(os.path.basename(arr[0]))[0] + '_output.txt'         
+    with open(file_name, 'w') as f:
+        f.write('\t'.join(column_order) + '\n')
+        for i, row in enumerate(a_sc):  
+            if i >= 1: 
+                f.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(row[8], row[2], str(row[3]) + " ± " + str(row[4]), str(row[5]) + " ± " + str(row[6]), row[7], row[9], dis_tg, row_selected, delta))  # Thêm dis_tg vào hàng ghi
 
-
-
-
-
-                               
-        H = max(filter(lambda x: x[4], a_sc[1:]), key=itemgetter(1))
-        # H = H.sorted(a_sc[1:], key=lambda x: x[2], reverse=True)
-        H = max(a_sc[1:][::-1], key = lambda x: x[5])
-        # H = max(a[4] for a in a_sc[1:])
-        print(H)
-        F = H[8]
-        x = H[9]
-        # B = np.copy(F)
-        for i in range(1, n_steps):
-            dU = DS[i]
-            U = np.vstack((U, dU))
-            num_delta = dU.shape[0]
-            IF.update_dataset(U)
-            IF.update_n_objs()
-            IF.update_retional_matrices()
-            IF.update_dis(dis_tg)
-            IF = IntuitiveFuzzy(U, arr[0], arr[1], arr[2], x, F, num_delta, dis_tg)
-            F, dis_tg, time_filter = IF.filter_incre()
-            print("F", F)
-            IF.update_n_attribute(F)
-            sc = IF.evaluate(arr[0], F, time_filter)
-            a_sc.append(sc)
-            # os.system('cls')
-            print (tabulate(a_sc, headers='firstrow', tablefmt='pipe', stralign='center'))
-            # os.system('cls')
-            # with open('output.txt', 'a') as f:
-            #     for row in a_sc[1:]:
-            #         f.write('\t'.join(map(str, row)) + '\n')
+          
+    H = max(filter(lambda x: x[4], a_sc[1:]), key=itemgetter(1))
+    # H = H.sorted(a_sc[1:], key=lambda x: x[2], reverse=True)
+    H = max(a_sc[1:][::-1], key = lambda x: x[5])
+    # H = max(a[4] for a in a_sc[1:])
+    # print("Thong so bien H: ")
+    print(H)
+    F = H[8] 
+    # reduct
+    x = H[9]
+    # B = np.copy(F)
+    # dis_tg save 
+    for i in range(1, n_steps):
+        dU = DS[i]
+        U = np.vstack((U, dU))
+        num_delta = dU.shape[0]
+        IF.update_dataset(U)
+        IF.update_n_objs()
+        IF.update_retional_matrices()
+        IF.update_dis(dis_tg)
+        IF = IntuitiveFuzzy(U, arr[0], arr[1], arr[2], x, F, num_delta, dis_tg)
+        F, dis_tg, time_filter = IF.filter_incre()
+        print("F", F)
+        IF.update_n_attribute(F)
+        sc = IF.evaluate(arr[0], F, time_filter)
+        a_sc.append(sc)
+        # os.system('cls')
+        print (tabulate(a_sc, headers='firstrow', tablefmt='pipe', stralign='center'))
+           
 
     
 
