@@ -29,7 +29,7 @@ class Ui_Reinforcement(object):
                 self.delta.setText(str(data_line[8]))
                 self.ledAlpha.setText(str(data_line[5]))
                 x = float(data_line[5])
-                delta = float(data_line[8])
+                self.delta = float(data_line[8])
                
 
                 data = []
@@ -151,6 +151,7 @@ class Ui_Reinforcement(object):
         self.centralwidget = QtWidgets.QWidget(parent=mainWindow)
         self.centralwidget.setObjectName("centralwidget")
 
+            
         # Button to import data
         self.btnImportData = QtWidgets.QPushButton(
             parent=self.centralwidget, clicked=lambda: self.importData()

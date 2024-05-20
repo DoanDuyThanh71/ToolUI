@@ -31,7 +31,7 @@ class IntuitiveFuzzy(object):
 		### For filtering phase ###
 		self.num_attr = len(self.attributes)
 		self.num_objs = len(self.data[:,0])
-		print("Doi tuong", self.num_objs)
+		# print("Doi tuong", self.num_objs)
 		# print("num_obj",self.num_objs)
 		self.num_delta = num_delta
 		self.num_prev = self.num_objs - self.num_delta
@@ -214,8 +214,8 @@ class IntuitiveFuzzy(object):
 			self.B.append(pt[0])
 		# Add reduce one variable step
 		finish = time.time() - start
-		print("dis_B", d)
-		print("dis_C", dis_C)
+		# print("dis_B", d)
+		# print("dis_C", dis_C)
 		self.dis_tg = d
 		return self.B, self.dis_tg, finish
 	
@@ -231,8 +231,8 @@ class IntuitiveFuzzy(object):
 		dis_B = self.incre_distance(matrix_B)
 		# if round(dis_B, 4) - round(dis_C, 4) > 0.001: delta = 0.001
 		# else: delta = self.delta
-		print("dis_C", round(dis_C,3))
-		print("dis_B", round(dis_B,3))
+		# print("dis_C", round(dis_C,3))
+		# print("dis_B", round(dis_B,3))
 		# dis_prev = np.copy(self.dis_tg)
 		start = time.time()
 		# Filter attributes
@@ -260,7 +260,7 @@ class IntuitiveFuzzy(object):
 			dis_remove_cm = self.partition_dist_d(matrix_B)
 			if round(dis_remove_cm - dis_B, 3) <= 0.001 :
 				# if len(self.B) == 1: return self.B, self.dis_tg, finish
-				print("Loai bo c_M ",c_m)
+				# print("Loai bo c_M ",c_m)
 				self.B = new_B
 		finish = time.time() - start
 		return self.B, self.dis_tg, finish

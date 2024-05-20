@@ -99,13 +99,13 @@ def main(arr_data):
             DS = split_data_icr(DS, row_selected + row)
             U = np.vstack(DS)
 
-            IF = IntuitiveFuzzy(DS[0], arr[0], arr[1], arr[2], x, F, num_prev, dis_tg)
+            # IF = IntuitiveFuzzy(DS[0], arr[0], arr[1], arr[2], x, F, num_prev, dis_tg)
 
             num_delta = row_selected
-            IF.update_dataset(U)
-            IF.update_n_objs()
-            IF.update_retional_matrices()
-            IF.update_dis(dis_tg)
+            # IF.update_dataset(U)
+            # IF.update_n_objs()
+            # IF.update_retional_matrices()
+            # IF.update_dis(dis_tg)
             IF = IntuitiveFuzzy(U, arr[0], arr[1], arr[2], x, F, num_delta, dis_tg)
             F, dis_tg, time_filter = IF.filter_incre()
             print("F", F)
@@ -115,6 +115,26 @@ def main(arr_data):
             print(
                 tabulate(a_sc, headers="firstrow", tablefmt="pipe", stralign="center")
             )
+            column_order = [
+                "Reduct",
+                "Size of the reduct",
+                "Acc_O ± std_O",
+                "Acc_F ± std_F",
+                "Runtime",
+                "Alpha",
+                "Dis_Tg",
+                "Row_select",
+                "Delta"
+            ]
+
+            with open(file_name, 'a') as f:
+                for i, row in enumerate(a_sc):
+                    if i >= 1:  # Bỏ qua tiêu đề
+                        f.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(
+                            row[8], row[2], str(row[3]) + " ± " + str(row[4]),
+                            str(row[5]) + " ± " + str(row[6]), row[7],
+                            row[9], dis_tg, row_selected, delta
+                        ))
 
     print(time.time() - start)
 
