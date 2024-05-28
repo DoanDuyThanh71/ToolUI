@@ -74,7 +74,6 @@ def main(arr_data):
     # F = []
     num_prev = 0
     dis_tg = 0 
-    
     X = [alpha]
     # Muc alpha
     # X = [0,0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1]
@@ -87,21 +86,21 @@ def main(arr_data):
     DS = split_data_icr(DS,row_selected)
     # step 1: Compute IFPDs on original dataset.
     IF = IntuitiveFuzzy(DS[0], arr[0], arr[1], arr[2], x, F, num_prev, dis_tg)
-    F, dis_tg, time_filter = IF.filter()
+    F, dis_tg, time_filter, dis_tg_C, dis_tg_B= IF.filter()
     print("F", F)
     sc = IF.evaluate(arr[0], F, time_filter)
     a_sc.append(sc)
     # os.system('cls')
-    # print (tabulate(a_sc, headers='firstrow', tablefmt='pipe', stralign='center'))
+    print (tabulate(a_sc, headers='firstrow', tablefmt='pipe', stralign='center'))
     # os.system('cls')
     U = DS[0]
-    column_order = ["Reduct", "Size of the reduct", "Acc_O ± std_O", "Acc_F ± std_F", "Runtime", "Alpha", "Dis_Tg","Row_select", "Delta"]          
+    column_order = ["Reduct", "Size of the reduct", "Acc_O ± std_O", "Acc_F ± std_F", "Runtime", "Alpha", "Dis_Tg","Row_select", "Delta", "Dis_Tg_B", "Dis_Tg_C"]          
     file_name = os.path.splitext(os.path.basename(arr[0]))[0] + '_output.txt'         
     with open(file_name, 'w') as f:
         f.write('\t'.join(column_order) + '\n')
         for i, row in enumerate(a_sc):  
             if i >= 1: 
-                f.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(row[8], row[2], str(row[3]) + " ± " + str(row[4]), str(row[5]) + " ± " + str(row[6]), row[7], row[9], dis_tg, row_selected, delta))  # Thêm dis_tg vào hàng ghi
+                f.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(row[8], row[2], str(row[3]) + " ± " + str(row[4]), str(row[5]) + " ± " + str(row[6]), row[7], row[9], dis_tg, row_selected, delta, dis_tg_B, dis_tg_C))  # Thêm dis_tg vào hàng ghi
 
           
     # H = max(filter(lambda x: x[4], a_sc[1:]), key=itemgetter(1))

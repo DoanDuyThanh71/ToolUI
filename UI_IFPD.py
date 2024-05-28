@@ -1,13 +1,14 @@
 from multiprocessing import process
 import os
 from PyQt6 import QtCore, QtGui, QtWidgets
-from Dialog import ErrorDialog
+from UI_Dialog import ErrorDialog
 import subprocess
 import csv
 import sys
+from UI_ProgressDialog import ProgressDialog
 
 
-class Ui_Reinforcement(object):
+class UI_IFPD(object):
     def __init__(self) -> None:
         self.path = None
         self.col = None
@@ -30,7 +31,6 @@ class Ui_Reinforcement(object):
                 self.ledAlpha.setText(str(data_line[5]))
                 x = float(data_line[5])
                 self.delta = float(data_line[8])
-               
 
                 data = []
                 file_name = os.path.basename(file_path)
@@ -64,7 +64,9 @@ class Ui_Reinforcement(object):
                 error_dialog.show_error("File not found")
 
     def run_app(self):
-
+        
+        
+        
         if not self.path:
             error_dialog = ErrorDialog("")
             error_dialog.show_error("No file selected. Please import a CSV file.")
@@ -88,11 +90,14 @@ class Ui_Reinforcement(object):
             error_dialog = ErrorDialog("")
             error_dialog.show_error("The value of the selected row is invalid.")
             return
-
+        
+        progress_dialog = ProgressDialog()
+        progress_dialog.show()
+        
         subprocess_process = subprocess.Popen(
             [
                 "python",
-                "RFC.py",
+                "IFPD.py",
                 str(self.path),
                 str(self.col),
                 str(row_selected),
@@ -100,6 +105,8 @@ class Ui_Reinforcement(object):
             ]
         )
         subprocess_process.wait()
+        
+        progress_dialog.close()
 
         self.tabAns.setRowCount(0)
         file_name_with_ext = os.path.basename(self.path)
@@ -151,7 +158,6 @@ class Ui_Reinforcement(object):
         self.centralwidget = QtWidgets.QWidget(parent=mainWindow)
         self.centralwidget.setObjectName("centralwidget")
 
-            
         # Button to import data
         self.btnImportData = QtWidgets.QPushButton(
             parent=self.centralwidget, clicked=lambda: self.importData()
@@ -177,7 +183,7 @@ class Ui_Reinforcement(object):
         font.setWeight(50)
         self.btnProcess.setFont(font)
         self.btnProcess.setObjectName("btnProcess")
-        
+
         # Label and Line Edit for Alpha
         self.label = QtWidgets.QLabel(parent=self.centralwidget)
         self.label.setGeometry(QtCore.QRect(40, 90, 111, 21))
@@ -269,7 +275,7 @@ if __name__ == "__main__":
 
     app = QtWidgets.QApplication(sys.argv)
     mainWindow = QtWidgets.QMainWindow()
-    ui = Ui_Reinforcement()
+    ui = UI_IFPD()
     ui.setupUi(mainWindow)
     mainWindow.show()
     sys.exit(app.exec())

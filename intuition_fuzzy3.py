@@ -11,29 +11,31 @@ from sklearn.neighbors import KNeighborsClassifier
 class IntuitiveFuzzy(object):
 
 
-	def __init__(self, data, namefile, att_nominal_cate, delta, alpha, B, num_delta, dis_tg):
+	def __init__(self, data, split_indice, namefile, att_nominal_cate, delta, alpha, B, num_delta, dis_tg_C, dis_tg_B):
 		#super(IntuitiveFuzzy, self).__init__()
 		# self.data_train = data_train
 		self.data = data
-		# print(self.data)
+		self.split_indice = split_indice
 		self.namefile = namefile
 		# Including decision. Assume last column is decision values
 		self.attributes = range(0, len(self.data[0]))
 		self.C = self.attributes[:-1]
 		self.B = B
 		# self.dis_C = dis_C
-		self.dis_tg = dis_tg
+		self.dis_tg_C = dis_tg_C
+		self.dis_tg_B = dis_tg_B
+
 		# self.W = []
 		self.arr_cate = att_nominal_cate
 		self.arr_real = [i for i in self.attributes  if i not in att_nominal_cate]
 
-
 		### For filtering phase ###
 		self.num_attr = len(self.attributes)
 		self.num_objs = len(self.data[:,0])
-		# print("Doi tuong", self.num_objs)
+		print("Doi tuong", split_indice)
 		# print("num_obj",self.num_objs)
 		self.num_delta = num_delta
+		print("doi tuong truoc", self.num_delta)
 		self.num_prev = self.num_objs - self.num_delta
 		# print("num_prev", self.num_delta)
 		# self.num_objs_icr = len(self.data[:,0])
@@ -41,6 +43,7 @@ class IntuitiveFuzzy(object):
 		self.num_class = len(set(self.data[:,-1]))
 		self.delta = delta
 		self.alpha = alpha
+		print("Alpha", self.alpha)
 
 		self.relational_matrices = self._get_single_attr_IFRM(self.data)
 		self.IFRM = None
@@ -119,8 +122,8 @@ class IntuitiveFuzzy(object):
 		"""
 		# result = np.zeros((2,self.num_objs, self.num_objs),dtype=np.float32)
 		# num_objs = IFRM_1[0].shape[0]
-		shape_1, shape_2 = IFRM_1.shape[1], IFRM_1.shape[2]
-		result = np.zeros((2, shape_1, shape_2), dtype=np.float32)
+		# shape_1, shape_2 = IFRM_1.shape[1], IFRM_1.shape[2]
+		result = np.zeros((2, self.num_objs, self.num_objs), dtype=np.float32)
 
 		result[0] = np.minimum(IFRM_1[0], IFRM_2[0])
 		result[1] = np.maximum(IFRM_1[1], IFRM_2[1])
@@ -135,9 +138,9 @@ class IntuitiveFuzzy(object):
 			Returns :
 				- caridnality : The caridnality of that parition
 		"""
-		ones = np.ones(IFRM[0].shape,dtype=np.float32)
+		# ones = np.ones(IFRM[0].shape,dtype=np.float32)
 		#caridnality = round(np.sum((ones + IFRM[0] - IFRM[1])/2),2)
-		caridnality = np.sum((ones + IFRM[0] - IFRM[1])/2)
+		caridnality = np.sum((1. + IFRM[0] - IFRM[1])) /2
 		return caridnality
 
 	def partition_dist_d(self, IFRM): #Tinh tren U + dU
@@ -150,20 +153,24 @@ class IntuitiveFuzzy(object):
 		IFRM_cardinality = self._get_cardinality(IFRM)
 		IFRM_d = self._get_union_IFRM(IFRM, self.relational_matrices[self.attributes[-1]])
 		IFRM_d_cardinality = self._get_cardinality(IFRM_d)
-		dis = (1 / ((self.num_objs)**2)) * (IFRM_cardinality - IFRM_d_cardinality)
+		dis = (1 / ((self.split_indice)**2)) * (IFRM_cardinality - IFRM_d_cardinality)
 		return dis
 	
-	def incre_distance(self, M):
-		tp1 = (self.num_prev)** 2 * self.dis_tg
-		
-		H = self._get_union_IFRM(M[:, self.num_prev:, :], self.relational_matrices[-1][:, self.num_prev:, :])
-		
-		tp3 = 1/2 * np.sum(- H[0, :, self.num_prev: ] + H[1, :, self.num_prev:] + M[0, self.num_prev:, self.num_prev:] - M[1, self.num_prev:, self.num_prev:])
 
-		tp2 = ( self._get_cardinality( M[:, self.num_prev:, :]) - self._get_cardinality(H) )
-	#     print("tp2 ", tp2)
-		distance = (tp1 + 2 * tp2 - tp3) / ((self.num_objs)**2)
-		# print("ABCD", distance)
+	def incre_distance(self, dis, M):
+
+		tp1 = (self.num_delta)** 2 * dis
+		# print("tp1", tp1)
+		
+		H = self._get_union_IFRM(M, self.relational_matrices[-1])
+		
+		tp3 = 1/2 * np.sum(- H[0, self.split_indice:self.num_delta, self.split_indice:self.num_delta ] + H[1, self.split_indice:self.num_delta, self.split_indice:self.num_delta] 
+					 + M[0, self.split_indice : self.num_delta, self.split_indice:self.num_delta] - M[1, self.split_indice : self.num_delta, self.split_indice : self.num_delta])
+		# print("tp3 ", tp3)
+		tp2 = self._get_cardinality( M[:, self.split_indice :self.num_delta , :self.num_delta]) - self._get_cardinality(H[:, self.split_indice:self.num_delta, :self.num_delta])
+		# print("tp2 ", tp2)
+		distance = (tp1 - 2 * tp2 + tp3) / ((self.split_indice)**2)
+
 		return distance
 
 	def sig(self, IFRM, a):
@@ -194,7 +201,6 @@ class IntuitiveFuzzy(object):
 		matrix_C = reduce(self._get_union_IFRM, [self.relational_matrices[i] for i in self.attributes[:-1]])
 		dis_C = self.partition_dist_d(matrix_C)
 
-
 		# Filter phase
 		start = time.time()
 		c_m = min(np.setdiff1d(self.C, self.B), key=lambda x: self.partition_dist_d(self.relational_matrices[x]))
@@ -202,69 +208,111 @@ class IntuitiveFuzzy(object):
 		
 		IFRM_TG = self.relational_matrices[c_m]
 		d = self.partition_dist_d(IFRM_TG)
-		# print("dis_B", d)
-		# print("dis_C", dis_C)
+
 		while round(d,3) - round(dis_C, 3) > self.delta :
-			li = [[cm, d - self.partition_dist_d(self._get_union_IFRM(IFRM_TG, self.relational_matrices[cm]))]
+			li = [[cm, self.partition_dist_d(self._get_union_IFRM(IFRM_TG, self.relational_matrices[cm]))]
               for cm in np.setdiff1d(self.C, self.B)]
-			# print("li",li)
-			pt = max(li, key=lambda x: x[1])
+
+			pt = min(li, key=lambda x: x[1])
 			IFRM_TG = self._get_union_IFRM(IFRM_TG, self.relational_matrices[pt[0]])
-			d = d - pt[1]
-			print("d",d)
+			d = pt[1]
+			print("d: ", d)
 			self.B.append(pt[0])
+		self.dis_tg_C = dis_C
+		self.dis_tg_B = d
 		# Add reduce one variable step
 		finish = time.time() - start
-		# print("dis_B", d)
-		# print("dis_C", dis_C)
-		self.dis_tg = d
-		return self.B, self.dis_tg, finish, dis_C, d
+		# self.dis_tg = d
+		return self.B, self.dis_tg_C, self.dis_tg_B, finish
 	
-	# dist_C_up = incre_distance(dist_C, M_C_up)
-	# dist_B_up = incre_distance(dist_B, M_B_up)
 
 	# Filter stage when adding object set delta_O = {o4, o5}
 	def filter_incre(self):
 		matrix_C = reduce(self._get_union_IFRM, [self.relational_matrices[i] for i in self.attributes[:-1]])
 		matrix_B = reduce(self._get_union_IFRM, [self.relational_matrices[i] for i in self.B])
+		dis_B_incre = self.incre_distance(self.dis_tg_B, matrix_B)
+		dis_C_incre = self.incre_distance(self.dis_tg_C, matrix_C)
+		print("dis_B_incre", dis_B_incre)	
+		print("dis_C_incre", dis_C_incre)	
+		# dis_C = self.incre_distance(matrix_C)
+		# dis_C = self.incre_distance(self.dis_tg_C, matrix_C)
+		# print("Dis_B", dis_B)
+		# print("Dis_C", dis_C)
 
-		dis_C = self.incre_distance(matrix_C)
-		dis_B = self.incre_distance(matrix_B)
-		# if round(dis_B, 4) - round(dis_C, 4) > 0.001: delta = 0.001
-		# else: delta = self.delta
-		# print("dis_C", round(dis_C,3))
-		# print("dis_B", round(dis_B,3))
-		# dis_prev = np.copy(self.dis_tg)
+		# car_B = self._get_cardinality(matrix_B[:, :self.split_indice, :self.split_indice])
+		# IFRM_d = self._get_union_IFRM(matrix_B, self.relational_matrices[self.attributes[-1]])
+		# IFRM_d_cardinality = self._get_cardinality(IFRM_d[:, :self.split_indice, :self.split_indice])
+		# dis_B = (1 / ((self.split_indice)**2)) * (car_B  - IFRM_d_cardinality)			
+
+
+		# car_C = self._get_cardinality(matrix_C[:, :self.split_indice, :self.split_indice])
+		# IFRM_d_C = self._get_union_IFRM(matrix_C, self.relational_matrices[self.attributes[-1]])
+		# IFRM_d_cardinality_C = self._get_cardinality(IFRM_d_C[:, :self.split_indice, :self.split_indice])
+		# dis_C = (1 / ((self.split_indice)**2)) * (car_C  - IFRM_d_cardinality_C)		
+
+
+		# print("Dis_B", dis_B)
+		# print("Dis_C", dis_C)
+		# print("DTG", dtg)
 		start = time.time()
-		# Filter attributes
-		while round(dis_B - dis_C, 3) > 0.001 :
+		# if round(dis_B,3) - round(dis_C, 3) > 0.001:
+		# 	finish = time.time() - start
+		# 	return self.B, self.dis_tg_C, self.dis_tg_B, finish
+		# self.dis_tg_B = np.copy(dis_B_incre)
+		# B = np.copy(self.B)
+		# # Filter attributes
+		while round(dis_B_incre,3) - round(dis_C_incre, 3) > 0.001:
 			# print("Dis_prev", dis_prev)
 			# Sig = dist_B_up - incre_distance -> Choice max Sig
-			li = [[cm, dis_B - self.incre_distance(self._get_union_IFRM(matrix_B, self.relational_matrices[cm]))] 
-												for cm in np.setdiff1d(self.C, self.B)]
+			# new_B = np.setdiff1d(self.B, [c_m]).tolist()
+			li = [[cm, self.incre_distance(self.dis_tg_B,reduce(self._get_union_IFRM, [self.relational_matrices[x] for x in np.setdiff1d(self.B, [cm])]))] 
+												for cm in self.B]
+			# print(li)
 			pt = max(li, key=lambda x: x[1])
-			
-			# Calculate partition B at next step
-			matrix_B = self._get_union_IFRM(matrix_B, self.relational_matrices[pt[0]])
-			if pt[1] <= 0.001: break
-			dis_B = dis_B - pt[1]
-			self.B.append(pt[0])
-			# if pt[1] <= 0.001: break
-		self.dis_tg = dis_B
+			# print("PT1", pt[1])
+			# self.dis_tg_B = pt[1]
+			# print("dis_B", dis_B)
+			if pt[1] <= dis_B_incre : 
+				# self.dis_tg_B = dis_B
+				self.B.remove(pt[0])
+				dis_B_incre = pt[1]
+				break
+			else: 
+				self.dis_tg_B = pt[1]
+				# self.dis_tg_B = np.copy(dis_B_incre)
+				break
+			# self.dis_tg_B = dis_B
+		# 	# Calculate partition B at next step
+		# 	matrix_B = self._get_union_IFRM(matrix_B, self.relational_matrices[pt[0]])
+			# if pt[1] <= 0.001:
+			# 	dis_B = np.copy(pt[1])
+			# 	self.B = np.setdiff1d(self.B, [pt[0]])
+			# 	break
+				# self.B = np.setdiff1d(self.B, [pt[0]])
+				# dis_B = np.copy(pt[1])
+		# self.B = np.copy(B)
+		# matrix_B_new = reduce(self._get_union_IFRM, [self.relational_matrices[i] for i in self.B])
+		# dis_B_incre_new = self.incre_distance(self.dis_tg_B, matrix_B_new)
+		# print("New",dis_B_incre_new)
+
+		# car_B = self._get_cardinality(matrix_B_new[:, :self.split_indice, :self.split_indice])
+		# IFRM_d = self._get_union_IFRM(matrix_B_new, self.relational_matrices[self.attributes[-1]])
+		# IFRM_d_cardinality = self._get_cardinality(IFRM_d[:, :self.split_indice, :self.split_indice])
+		# dis_B_new = (1 / ((self.split_indice)**2)) * (car_B  - IFRM_d_cardinality)			
+
+		# print("New2",dis_B_new)
+			# max_c = dis_B
+			# h = []
+			# for x in self.B:
+			# 	dis_incre_x = self.partition_dist_d(reduce(self._get_union_IFRM, [self.relational_matrices[x] for x in np.setdiff1d(self.B, [x])]))
+			# 	h.append([x,dis_incre_x])
+			# pt = max(h, key=lambda h: h[1])
+			# self.B.remove(pt[0])
+			# self.dis_tg_B = pt[1]
+			# break
+		self.dis_tg_C = np.copy(dis_C_incre)
 		finish = time.time() - start
-		if len(self.B) <= 1: return self.B, self.dis_tg, finish
-		for c_m in self.B:
-			# remove one variable
-			new_B = np.setdiff1d(self.B, [c_m]).tolist()
-			# recalculate the d(P(B), P(B u {d}))
-			matrix_B = reduce(self._get_union_IFRM, [self.relational_matrices[c_m] for c_m in new_B])
-			dis_remove_cm = self.partition_dist_d(matrix_B)
-			if round(dis_remove_cm - dis_B, 3) <= 0.001 :
-				# if len(self.B) == 1: return self.B, self.dis_tg, finish
-				# print("Loai bo c_M ",c_m)
-				self.B = new_B
-		finish = time.time() - start
-		return self.B, self.dis_tg, finish
+		return self.B, self.dis_tg_C, self.dis_tg_B, finish
 
 	def scores(self, reduct):
 		# y_test = self.data[:,-1]
@@ -274,9 +322,9 @@ class IntuitiveFuzzy(object):
 		# X_test = self.data[:,list_index]
 		# print(list_index)
 
-		y_train = self.data[:,-1]
+		y_train = self.data[:self.split_indice,-1]
 		y_train = y_train.astype(int)
-		X_train = self.data[:, reduct]
+		X_train = self.data[:self.split_indice, reduct]
 
 
 		#X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=0)
@@ -340,12 +388,12 @@ class IntuitiveFuzzy(object):
 
 		# y_test= self.data[:,-1]
 		# y_test = y_test.astype(int)
-		y_train = self.data[:,-1]
+		y_train = self.data[:self.split_indice,-1]
 		y_train = y_train.astype(int)
 		
 		
 		# X_test_o = self.data[:,:-1]
-		X_train_o = self.data[:,:-1]
+		X_train_o = self.data[:self.split_indice,:-1]
 
 
 		clf_o = cf.fit(X_train_o, y_train)
@@ -360,7 +408,7 @@ class IntuitiveFuzzy(object):
 		# Calculate Filter
 		# reduct_f = reduct_f[-1]
 		# X_test = self.data[:, reduct_f]
-		X_train = self.data[:, reduct_f]
+		X_train = self.data[:self.split_indice, reduct_f]
 
 		clf = cf.fit(X_train, y_train)
 		# scores_f = round(clf.score(X_test, y_train),3)
@@ -370,6 +418,3 @@ class IntuitiveFuzzy(object):
 
 		return (name,len(self.attributes)-1, len(reduct_f),
 			 scores_o, std_o, scores_f, std_f, round(time_f,3), list(self.B), self.alpha)
-
-  
-

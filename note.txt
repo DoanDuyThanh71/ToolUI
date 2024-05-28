@@ -1,5 +1,0 @@
-Các tham số truyền tới còn một vài lỗi, kiểm tra data[0]
-
-
-dispy 
-pySpark 
