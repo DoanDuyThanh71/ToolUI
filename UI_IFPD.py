@@ -5,6 +5,7 @@ from UI_Dialog import ErrorDialog
 import subprocess
 import csv
 import sys
+import threading
 from UI_ProgressDialog import ProgressDialog
 
 
@@ -14,6 +15,7 @@ class UI_IFPD(object):
         self.col = None
         self.row = None
         self.delta = None
+        self.row_selected = 0
 
     def importData(self):
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
@@ -64,9 +66,6 @@ class UI_IFPD(object):
                 error_dialog.show_error("File not found")
 
     def run_app(self):
-        
-        
-        
         if not self.path:
             error_dialog = ErrorDialog("")
             error_dialog.show_error("No file selected. Please import a CSV file.")
@@ -82,7 +81,8 @@ class UI_IFPD(object):
             row_selected = int(row_selected_text)
             row = int(self.row)
             data = self.data
-            if row_selected <= 0 or row_selected > len(data) - 1 - row:
+            self.row_selected = row_selected
+            if row_selected <= 0 or row_selected >= row:
                 error_dialog = ErrorDialog("")
                 error_dialog.show_error(f"The selected row is invalid.")
                 return
@@ -90,23 +90,31 @@ class UI_IFPD(object):
             error_dialog = ErrorDialog("")
             error_dialog.show_error("The value of the selected row is invalid.")
             return
-        
+
+        def execute_Popen():
+            subprocess_process = subprocess.Popen(
+                [
+                    "python",
+                    "IFPD.py",
+                    str(self.path),
+                    str(self.col),
+                    str(self.row_selected),
+                    str(self.delta),
+                ]
+            )
+            subprocess_process.wait()  # Chờ cho quá trình kết thúc
+            progress_dialog.finished
+            
+
+            # Sau khi quá trình kết thúc, đóng dialog
+            
+
+        # Hiển thị dialog
         progress_dialog = ProgressDialog()
         progress_dialog.show()
-        
-        subprocess_process = subprocess.Popen(
-            [
-                "python",
-                "IFPD.py",
-                str(self.path),
-                str(self.col),
-                str(row_selected),
-                str(self.delta),
-            ]
-        )
-        subprocess_process.wait()
-        
-        progress_dialog.close()
+
+        # Thực thi Popen trong một luồng riêng biệt
+        threading.Thread(target=execute_Popen).start()
 
         self.tabAns.setRowCount(0)
         file_name_with_ext = os.path.basename(self.path)
@@ -128,15 +136,17 @@ class UI_IFPD(object):
 
         num_columns = self.tabAns.columnCount()
 
-        # Set độ rộng của cột đầu tiên bằng 50% độ dài của tabAns
-
-        for col_idx in range(num_columns):
+        # Loop through all columns and set bold font for headers
+        for col_idx in range(min(num_columns, 7)):  # Only for the first 7 columns
             header_item = self.tabAns.horizontalHeaderItem(col_idx)
             if header_item is not None:
                 font = QtGui.QFont()
                 font.setBold(True)
                 header_item.setFont(font)
+
         self.tabAns.setWordWrap(True)
+
+        # Set the width for the first 7 columns
         first_column_width = round(0.4 * self.tabAns.width())
         self.tabAns.setColumnWidth(0, first_column_width)
         self.tabAns.setColumnWidth(1, round(0.1 * self.tabAns.width()))
@@ -145,9 +155,12 @@ class UI_IFPD(object):
         self.tabAns.setColumnWidth(4, round(0.0932 * self.tabAns.width()))
         self.tabAns.setColumnWidth(5, round(0.0932 * self.tabAns.width()))
 
+        # Hide the remaining columns
+        for col_idx in range(6, num_columns):
+            self.tabAns.setColumnHidden(col_idx, True)
     def setupUi(self, mainWindow):
         mainWindow.setObjectName("mainWindow")
-        mainWindow.resize(1300, 616)
+        mainWindow.setFixedSize(1300, 616)
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed
         )

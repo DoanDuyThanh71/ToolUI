@@ -32,10 +32,10 @@ class IntuitiveFuzzy(object):
 		### For filtering phase ###
 		self.num_attr = len(self.attributes)
 		self.num_objs = len(self.data[:,0])
-		print("Doi tuong", split_indice)
+		# print("Doi tuong", split_indice)
 		# print("num_obj",self.num_objs)
 		self.num_delta = num_delta
-		print("doi tuong truoc", self.num_delta)
+		# print("doi tuong truoc", self.num_delta)
 		self.num_prev = self.num_objs - self.num_delta
 		# print("num_prev", self.num_delta)
 		# self.num_objs_icr = len(self.data[:,0])
@@ -43,7 +43,7 @@ class IntuitiveFuzzy(object):
 		self.num_class = len(set(self.data[:,-1]))
 		self.delta = delta
 		self.alpha = alpha
-		print("Alpha", self.alpha)
+		# print("Alpha", self.alpha)
 
 		self.relational_matrices = self._get_single_attr_IFRM(self.data)
 		self.IFRM = None
@@ -232,8 +232,8 @@ class IntuitiveFuzzy(object):
 		matrix_B = reduce(self._get_union_IFRM, [self.relational_matrices[i] for i in self.B])
 		dis_B_incre = self.incre_distance(self.dis_tg_B, matrix_B)
 		dis_C_incre = self.incre_distance(self.dis_tg_C, matrix_C)
-		print("dis_B_incre", dis_B_incre)	
-		print("dis_C_incre", dis_C_incre)	
+		# print("dis_B_incre", dis_B_incre)	
+		# print("dis_C_incre", dis_C_incre)	
 		# dis_C = self.incre_distance(matrix_C)
 		# dis_C = self.incre_distance(self.dis_tg_C, matrix_C)
 		# print("Dis_B", dis_B)

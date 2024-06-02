@@ -69,7 +69,7 @@ def read_file(file_name):
 
 
 def main(arr_data):
-
+    
     path = sys.argv[1]
     col = int(sys.argv[2])
     row_selected = int(sys.argv[3])
@@ -125,11 +125,29 @@ def main(arr_data):
         F, dis_tg_C, dis_tg_B, time_filter = IF.filter_incre()
         sc = IF.evaluate(arr[0], F, time_filter)
         a_sc.append(sc)
-        print (tabulate(a_sc, headers='firstrow', tablefmt='pipe', stralign='center'))
-
+        # print (tabulate(a_sc, headers='firstrow', tablefmt='pipe', stralign='center'))
+        column_order = [
+                "Reduct",
+                "Size of the reduct",
+                "Acc_O ± std_O",
+                "Acc_F ± std_F",
+                "Runtime",
+                "Alpha",
+                "Dis_Tg",
+                "Row_select",
+                "Delta"
+            ]
+        with open(file_name, 'a') as f:
+                for i, row in enumerate(a_sc):
+                    if i >= 1:  # Bỏ qua tiêu đề
+                        f.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(
+                            row[8], row[2], str(row[3]) + " ± " + str(row[4]),
+                            str(row[5]) + " ± " + str(row[6]), row[7],
+                            row[9], dis_tg, row_selected, delta
+                        ))
     
 
-    print(time.time()-start)
+    # print(time.time()-start)
 
 if __name__ == "__main__":
     main(arr_data)

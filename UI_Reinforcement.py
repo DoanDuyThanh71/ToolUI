@@ -125,15 +125,17 @@ class Ui_Reinforcement(object):
 
         num_columns = self.tabAns.columnCount()
 
-        # Set độ rộng của cột đầu tiên bằng 50% độ dài của tabAns
-
-        for col_idx in range(num_columns):
+        # Loop through all columns and set bold font for headers
+        for col_idx in range(min(num_columns, 7)):  # Only for the first 7 columns
             header_item = self.tabAns.horizontalHeaderItem(col_idx)
             if header_item is not None:
                 font = QtGui.QFont()
                 font.setBold(True)
                 header_item.setFont(font)
+
         self.tabAns.setWordWrap(True)
+
+        # Set the width for the first 7 columns
         first_column_width = round(0.4 * self.tabAns.width())
         self.tabAns.setColumnWidth(0, first_column_width)
         self.tabAns.setColumnWidth(1, round(0.1 * self.tabAns.width()))
@@ -142,9 +144,13 @@ class Ui_Reinforcement(object):
         self.tabAns.setColumnWidth(4, round(0.0932 * self.tabAns.width()))
         self.tabAns.setColumnWidth(5, round(0.0932 * self.tabAns.width()))
 
+        # Hide the remaining columns
+        for col_idx in range(6, num_columns):
+            self.tabAns.setColumnHidden(col_idx, True)
+
     def setupUi(self, mainWindow):
         mainWindow.setObjectName("mainWindow")
-        mainWindow.resize(1300, 616)
+        mainWindow.setFixedSize(1300, 616)
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed
         )

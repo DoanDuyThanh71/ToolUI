@@ -12,16 +12,10 @@ class Ui_LoginWindow(object):
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         
-        # Load và thu nhỏ ảnh nền theo kích thước của cửa sổ
-        pixmap = QtGui.QPixmap("img_Haui.png")
-        scaled_pixmap = pixmap.scaled(MainWindow.size(), QtCore.Qt.AspectRatioMode.KeepAspectRatio, QtCore.Qt.TransformationMode.SmoothTransformation)
+
         
-        palette = QtGui.QPalette()
-        palette.setBrush(QtGui.QPalette.ColorRole.Window, QtGui.QBrush(scaled_pixmap))
-        MainWindow.setPalette(palette)
+        self.centralwidget.setStyleSheet("background-color: #f4f1eb;")
         
-        self.centralwidget = QtWidgets.QWidget(MainWindow)
-        self.centralwidget.setObjectName("centralwidget")
         # Label title
         self.label_title = QtWidgets.QLabel(self.centralwidget)
         self.label_title.setGeometry(QtCore.QRect(150, 20, 100, 30))
