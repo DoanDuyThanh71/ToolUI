@@ -216,7 +216,7 @@ class IntuitiveFuzzy(object):
 			pt = min(li, key=lambda x: x[1])
 			IFRM_TG = self._get_union_IFRM(IFRM_TG, self.relational_matrices[pt[0]])
 			d = pt[1]
-			print("d: ", d)
+			# print("d: ", d)
 			self.B.append(pt[0])
 		self.dis_tg_C = dis_C
 		self.dis_tg_B = d

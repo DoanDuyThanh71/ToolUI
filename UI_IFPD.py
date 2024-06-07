@@ -1,12 +1,35 @@
-from multiprocessing import process
-import os
 from PyQt6 import QtCore, QtGui, QtWidgets
 from UI_Dialog import ErrorDialog
-import subprocess
-import csv
-import sys
-import threading
 from UI_ProgressDialog import ProgressDialog
+import os
+import csv
+import subprocess
+import sys
+
+
+class Worker(QtCore.QThread):
+    finished = QtCore.pyqtSignal()
+
+    def __init__(self, path, col, row_selected, delta):
+        super().__init__()
+        self.path = path
+        self.col = col
+        self.row_selected = row_selected
+        self.delta = delta
+
+    def run(self):
+     
+        command=    [
+                "python",
+                "IFPD.py",
+                str(self.path),
+                str(self.col),
+                str(self.row_selected),
+                str(self.delta),
+            ]
+        subprocess_process = subprocess.Popen(command, creationflags=subprocess.CREATE_NO_WINDOW)
+        subprocess_process.wait()  # Chờ cho quá trình kết thúc
+        self.finished.emit()
 
 
 class UI_IFPD(object):
@@ -43,7 +66,6 @@ class UI_IFPD(object):
                 if data:
                     headers = data[0]
                     num_rows = len(data) - 1
-                    num_rows_View = len(data) - 1
                     num_cols = len(headers)
                     self.col = num_cols
                     self.row = int(data_line[7])
@@ -54,13 +76,10 @@ class UI_IFPD(object):
                     self.labInfor.setText(
                         f"Data imported successfully from file: \n{file_name}.\nRows: {num_rows}\nColumns: {num_cols}\nDecision Classes: {num_decision_classes}"
                     )
-                    # self.labInfor.setText(f"Data imported successfully.\nRows: {num_rows}\nColumns: {num_cols}\nDecision Classes: {num_decision_classes}")
                     self.tabAns.resizeColumnsToContents()
-
                 else:
                     self.labInfor.setText("No file selected.")
                 self.tabAns.resizeColumnsToContents()
-
             else:
                 error_dialog = ErrorDialog("")
                 error_dialog.show_error("File not found")
@@ -91,31 +110,18 @@ class UI_IFPD(object):
             error_dialog.show_error("The value of the selected row is invalid.")
             return
 
-        def execute_Popen():
-            subprocess_process = subprocess.Popen(
-                [
-                    "python",
-                    "IFPD.py",
-                    str(self.path),
-                    str(self.col),
-                    str(self.row_selected),
-                    str(self.delta),
-                ]
-            )
-            subprocess_process.wait()  # Chờ cho quá trình kết thúc
-            progress_dialog.finished
-            
-
-            # Sau khi quá trình kết thúc, đóng dialog
-            
+        self.worker = Worker(self.path, self.col, self.row_selected, self.delta)
+        self.worker.finished.connect(self.on_process_finished)
 
         # Hiển thị dialog
-        progress_dialog = ProgressDialog()
-        progress_dialog.show()
+        self.progress_dialog = ProgressDialog()
+        self.progress_dialog.show()
 
-        # Thực thi Popen trong một luồng riêng biệt
-        threading.Thread(target=execute_Popen).start()
+        # Bắt đầu worker thread
+        self.worker.start()
 
+    def on_process_finished(self):
+        self.progress_dialog.close()
         self.tabAns.setRowCount(0)
         file_name_with_ext = os.path.basename(self.path)
         file_name, _ = os.path.splitext(file_name_with_ext)
@@ -158,12 +164,22 @@ class UI_IFPD(object):
         # Hide the remaining columns
         for col_idx in range(6, num_columns):
             self.tabAns.setColumnHidden(col_idx, True)
+
+    def go_back(self):
+        from UI_Home import Ui_MainWindow
+        self.window = QtWidgets.QMainWindow()
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self.window)
+        self.window.show()
+        QtCore.QTimer.singleShot(0, QtWidgets.QApplication.instance().activeWindow().close)
+
     def setupUi(self, mainWindow):
         mainWindow.setObjectName("mainWindow")
         mainWindow.setFixedSize(1300, 616)
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed
         )
+
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(mainWindow.sizePolicy().hasHeightForWidth())
@@ -197,6 +213,17 @@ class UI_IFPD(object):
         self.btnProcess.setFont(font)
         self.btnProcess.setObjectName("btnProcess")
 
+        self.btnBack = QtWidgets.QPushButton(
+            parent=self.centralwidget, clicked=lambda: self.go_back()
+        )
+        self.btnBack.setGeometry(QtCore.QRect(40, 10, 60, 20))
+        font.setPointSize(12)
+        self.btnBack.setFont(font)
+        self.btnBack.setObjectName("btnBack")
+        icon = QtGui.QIcon("icon_back.png")
+        self.btnBack.setIcon(icon)
+        self.btnBack.clicked.connect(self.go_back)
+
         # Label and Line Edit for Alpha
         self.label = QtWidgets.QLabel(parent=self.centralwidget)
         self.label.setGeometry(QtCore.QRect(40, 90, 111, 21))
@@ -226,7 +253,7 @@ class UI_IFPD(object):
 
         # Combo Box for selecting values
         self.delta = QtWidgets.QLabel(parent=self.centralwidget)
-        self.delta.setGeometry(QtCore.QRect(160, 190, 131, 40))
+        self.delta.setGeometry(QtCore.QRect(160, 180, 131, 40))
         self.delta.setObjectName("delta")
         font = QtGui.QFont()
         font.setFamily("Tahoma")
@@ -235,7 +262,7 @@ class UI_IFPD(object):
         self.delta.setObjectName("labelDelta")
 
         self.labelDelta = QtWidgets.QLabel(parent=self.centralwidget)
-        self.labelDelta.setGeometry(QtCore.QRect(40, 190, 111, 21))
+        self.labelDelta.setGeometry(QtCore.QRect(40, 180, 131, 40))
         font = QtGui.QFont()
         font.setFamily("Tahoma")
         font.setPointSize(12)
@@ -284,8 +311,6 @@ class UI_IFPD(object):
 
 
 if __name__ == "__main__":
-    import sys
-
     app = QtWidgets.QApplication(sys.argv)
     mainWindow = QtWidgets.QMainWindow()
     ui = UI_IFPD()

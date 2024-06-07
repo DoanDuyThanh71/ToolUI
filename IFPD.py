@@ -123,6 +123,7 @@ def main(arr_data):
             # print("DIS B", dis_tg_B)
         IF = IntuitiveFuzzy(DS, row_selected, arr[0], arr[1], arr[2], x, F, row , dis_tg_C, dis_tg_B)
         F, dis_tg_C, dis_tg_B, time_filter = IF.filter_incre()
+        
         sc = IF.evaluate(arr[0], F, time_filter)
         a_sc.append(sc)
         # print (tabulate(a_sc, headers='firstrow', tablefmt='pipe', stralign='center'))

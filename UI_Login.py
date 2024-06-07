@@ -3,6 +3,8 @@ from PyQt6.QtWidgets import QApplication, QMainWindow
 from PyQt6 import QtCore, QtGui, QtWidgets
 from UI_Home import Ui_MainWindow
 from UI_Reinforcement import Ui_Reinforcement
+from cx_Freeze import setup, Executable
+
 
 class Ui_LoginWindow(object):
     def setupUi(self, MainWindow):

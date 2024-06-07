@@ -211,7 +211,7 @@ class IntuitiveFuzzy(object):
 			pt = max(li, key=lambda x: x[1])
 			IFRM_TG = self._get_union_IFRM(IFRM_TG, self.relational_matrices[pt[0]])
 			d = d - pt[1]
-			print("d",d)
+			# print("d",d)
 			self.B.append(pt[0])
 		# Add reduce one variable step
 		finish = time.time() - start

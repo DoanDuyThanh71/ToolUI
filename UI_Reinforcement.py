@@ -8,12 +8,47 @@ import sys
 from UI_ProgressDialog import ProgressDialog
 
 
+class Worker(QtCore.QThread):
+    finished = QtCore.pyqtSignal()
+
+    def __init__(self, path, col, row_selected, delta):
+        super().__init__()
+        self.path = path
+        self.col = col
+        self.row_selected = row_selected
+        self.delta = delta
+
+    def run(self):
+        command =  [
+                "python",
+                "IFPD.py",
+                str(self.path),
+                str(self.col),
+                str(self.row_selected),
+                str(self.delta),
+            ]
+        
+        subprocess_process = subprocess.Popen(command, creationflags=subprocess.CREATE_NO_WINDOW)
+        subprocess_process.wait()  # Chờ cho quá trình kết thúc
+        self.finished.emit()
+        
 class Ui_Reinforcement(object):
     def __init__(self) -> None:
         self.path = None
         self.col = None
         self.row = None
         self.delta = None
+        self.row_selected = 0
+    def go_back(self):
+        from UI_Home import Ui_MainWindow
+
+        self.window = QtWidgets.QMainWindow()
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self.window)
+        self.window.show()
+        QtCore.QTimer.singleShot(
+            0, QtWidgets.QApplication.instance().activeWindow().close
+        )
 
     def importData(self):
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
@@ -64,10 +99,10 @@ class Ui_Reinforcement(object):
                 error_dialog.show_error("File not found")
 
     def run_app(self):
-        
+
         progress_dialog = ProgressDialog()
         progress_dialog.show()
-        
+
         if not self.path:
             error_dialog = ErrorDialog("")
             error_dialog.show_error("No file selected. Please import a CSV file.")
@@ -81,6 +116,7 @@ class Ui_Reinforcement(object):
 
         try:
             row_selected = int(row_selected_text)
+            self.row_selected = row_selected
             row = int(self.row)
             data = self.data
             if row_selected <= 0 or row_selected > len(data) - 1 - row:
@@ -91,20 +127,18 @@ class Ui_Reinforcement(object):
             error_dialog = ErrorDialog("")
             error_dialog.show_error("The value of the selected row is invalid.")
             return
+        self.worker = Worker(self.path, self.col, self.row_selected, self.delta)
+        self.worker.finished.connect(self.on_process_finished)
 
-        subprocess_process = subprocess.Popen(
-            [
-                "python",
-                "RFC.py",
-                str(self.path),
-                str(self.col),
-                str(row_selected),
-                str(self.delta),
-            ]
-        )
-        subprocess_process.wait()
-        progress_dialog.close()
+        # Hiển thị dialog
+        self.progress_dialog = ProgressDialog()
+        self.progress_dialog.show()
 
+        # Bắt đầu worker thread
+        self.worker.start()
+        
+    def on_process_finished(self):
+        self.progress_dialog.close()
         self.tabAns.setRowCount(0)
         file_name_with_ext = os.path.basename(self.path)
         file_name, _ = os.path.splitext(file_name_with_ext)
@@ -148,6 +182,8 @@ class Ui_Reinforcement(object):
         for col_idx in range(6, num_columns):
             self.tabAns.setColumnHidden(col_idx, True)
 
+
+
     def setupUi(self, mainWindow):
         mainWindow.setObjectName("mainWindow")
         mainWindow.setFixedSize(1300, 616)
@@ -184,9 +220,20 @@ class Ui_Reinforcement(object):
         font.setPointSize(12)
         font.setBold(False)
         font.setWeight(50)
+
+        # Back btn
         self.btnProcess.setFont(font)
         self.btnProcess.setObjectName("btnProcess")
-
+        self.btnBack = QtWidgets.QPushButton(
+            parent=self.centralwidget, clicked=lambda: self.go_back()
+        )
+        self.btnBack.setGeometry(QtCore.QRect(40, 10, 60, 20))
+        font.setPointSize(12)
+        self.btnBack.setFont(font)
+        self.btnBack.setObjectName("btnBack")
+        icon = QtGui.QIcon("icon_back.png")
+        self.btnBack.setIcon(icon)
+        self.btnBack.clicked.connect(self.go_back)
         # Label and Line Edit for Alpha
         self.label = QtWidgets.QLabel(parent=self.centralwidget)
         self.label.setGeometry(QtCore.QRect(40, 90, 111, 21))
@@ -216,7 +263,7 @@ class Ui_Reinforcement(object):
 
         # Combo Box for selecting values
         self.delta = QtWidgets.QLabel(parent=self.centralwidget)
-        self.delta.setGeometry(QtCore.QRect(160, 190, 131, 40))
+        self.delta.setGeometry(QtCore.QRect(160, 190, 131, 21))
         self.delta.setObjectName("delta")
         font = QtGui.QFont()
         font.setFamily("Tahoma")

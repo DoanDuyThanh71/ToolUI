@@ -87,11 +87,11 @@ def main(arr_data):
     # step 1: Compute IFPDs on original dataset.
     IF = IntuitiveFuzzy(DS[0], arr[0], arr[1], arr[2], x, F, num_prev, dis_tg)
     F, dis_tg, time_filter, dis_tg_C, dis_tg_B= IF.filter()
-    print("F", F)
+    # print("F", F)
     sc = IF.evaluate(arr[0], F, time_filter)
     a_sc.append(sc)
     # os.system('cls')
-    print (tabulate(a_sc, headers='firstrow', tablefmt='pipe', stralign='center'))
+    # print (tabulate(a_sc, headers='firstrow', tablefmt='pipe', stralign='center'))
     # os.system('cls')
     U = DS[0]
     column_order = ["Reduct", "Size of the reduct", "Acc_O ± std_O", "Acc_F ± std_F", "Runtime", "Alpha", "Dis_Tg","Row_select", "Delta", "Dis_Tg_B", "Dis_Tg_C"]          

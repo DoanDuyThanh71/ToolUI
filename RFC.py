@@ -108,13 +108,13 @@ def main(arr_data):
             # IF.update_dis(dis_tg)
             IF = IntuitiveFuzzy(U, arr[0], arr[1], arr[2], x, F, num_delta, dis_tg)
             F, dis_tg, time_filter = IF.filter_incre()
-            print("F", F)
+            # print("F", F)
             IF.update_n_attribute(F)
             sc = IF.evaluate(arr[0], F, time_filter)
             a_sc.append(sc)
-            print(
-                tabulate(a_sc, headers="firstrow", tablefmt="pipe", stralign="center")
-            )
+            # print(
+            #     tabulate(a_sc, headers="firstrow", tablefmt="pipe", stralign="center")
+            # )
             column_order = [
                 "Reduct",
                 "Size of the reduct",
@@ -136,7 +136,7 @@ def main(arr_data):
                             row[9], dis_tg, row_selected, delta
                         ))
 
-    print(time.time() - start)
+    # print(time.time() - start)
 
 
 if __name__ == "__main__":
