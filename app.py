@@ -7,7 +7,9 @@ from sklearn import preprocessing
 from tabulate import tabulate
 import warnings, os, time
 from sklearn.model_selection import KFold
+import statistics 
 from operator import itemgetter
+# from utils_fuzzy import Logging
 from operator import itemgetter
 
 warnings.filterwarnings("ignore")
@@ -56,6 +58,7 @@ def split_data_icr(data, row_selected):
 
 
 def main(arr_data):
+    print("appp.py")
     path = sys.argv[1]
     col = int(sys.argv[2])
     row = int(sys.argv[3])
