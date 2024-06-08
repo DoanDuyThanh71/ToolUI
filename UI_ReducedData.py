@@ -3,6 +3,7 @@ import os
 from PyQt6 import QtCore, QtGui, QtWidgets
 from UI_Dialog import ErrorDialog
 from UI_ProgressDialog import ProgressDialog
+from app import appRun
 import subprocess
 import csv
 import sys
@@ -21,22 +22,8 @@ class Worker(QtCore.QThread):
         self.alpha = alpha
 
     def run(self):
-        shell=False
-        command = [
-            "python",
-            "app.py",
-            str(self.path),
-            str(self.col),
-            str(self.row),
-            str(self.alpha),
-            str(self.delta),
-            str(self.row_selected),
-        ]
-
-# Sử dụng subprocess.Popen() với tham số creationflags để ẩn cửa sổ cmd
-        subprocess_process = subprocess.Popen(command)
-  
-        subprocess_process.wait()  # Chờ cho quá trình kết thúc
+        shell = False
+        appRun(self.path, self.col, self.row, self.alpha, self.delta, self.row_selected)
         self.finished.emit()
 
 
@@ -155,17 +142,10 @@ class Ui_ReducedData(object):
             return
 
         delta = float(self.delta.currentText())
-
-        self.worker = Worker(
-            self.path, self.col, self.row, row_selected, alpha, delta
-        )
-        self.worker.finished.connect(self.on_process_finished)
-
-        # Hiển thị dialog
+        self.worker = Worker(self.path, self.col, self.row, row_selected, alpha, delta)
         self.progress_dialog = ProgressDialog()
         self.progress_dialog.show()
-
-        # Bắt đầu worker thread
+        self.worker.finished.connect(self.on_process_finished)
         self.worker.start()
 
     def on_process_finished(self):
@@ -226,7 +206,6 @@ class Ui_ReducedData(object):
         self.centralwidget = QtWidgets.QWidget(parent=mainWindow)
         self.centralwidget.setObjectName("centralwidget")
 
-        
         # Button to import data
         self.btnImportData = QtWidgets.QPushButton(
             parent=self.centralwidget, clicked=lambda: self.importData()

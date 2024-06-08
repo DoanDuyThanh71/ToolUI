@@ -7,9 +7,6 @@ from sklearn import preprocessing
 from tabulate import tabulate
 import warnings, os, time
 from sklearn.model_selection import KFold
-import statistics 
-from operator import itemgetter
-# from utils_fuzzy import Logging
 from operator import itemgetter
 
 warnings.filterwarnings("ignore")
@@ -57,14 +54,15 @@ def split_data_icr(data, row_selected):
     # return arrs
 
 
-def main(arr_data):
-    print("appp.py")
-    path = sys.argv[1]
-    col = int(sys.argv[2])
-    row = int(sys.argv[3])
-    alpha = float(sys.argv[4])
-    delta = float(sys.argv[5])
-    row_selected = int(sys.argv[6])
+def appRun(path, col, row, alpha, delta, row_selected):
+    arr_data = [
+    ]
+    # path = sys.argv[1]
+    # col = int(sys.argv[2])
+    # row = int(sys.argv[3])
+    # alpha = float(sys.argv[4])
+    # delta = float(sys.argv[5])
+    # row_selected = int(sys.argv[6])
     new_data = [path, [col-1], delta]
     # print("dap an", row_selected, delta)
     arr_data.append(new_data)
@@ -137,5 +135,3 @@ def main(arr_data):
 
     # print(time.time()-start)
 
-if __name__ == "__main__":
-    main(arr_data)
