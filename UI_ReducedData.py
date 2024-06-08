@@ -6,7 +6,6 @@ from UI_ProgressDialog import ProgressDialog
 import subprocess
 import csv
 import sys
-import ctypes
 
 
 class Worker(QtCore.QThread):

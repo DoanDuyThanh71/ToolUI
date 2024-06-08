@@ -1,14 +1,11 @@
 import numpy as np
 
-from UI_ProgressDialog import ProgressDialog
 from intuition_fuzzy3 import IntuitiveFuzzy
 from sklearn.preprocessing import LabelEncoder
 from sklearn import preprocessing
 from tabulate import tabulate
 import warnings, os, time
 from sklearn.model_selection import KFold
-import statistics 
-import csv
 import sys
 from operator import itemgetter
 from utils_fuzzy import Logging

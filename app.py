@@ -7,9 +7,7 @@ from sklearn import preprocessing
 from tabulate import tabulate
 import warnings, os, time
 from sklearn.model_selection import KFold
-import statistics 
 from operator import itemgetter
-# from utils_fuzzy import Logging
 from operator import itemgetter
 
 warnings.filterwarnings("ignore")
