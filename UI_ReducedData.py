@@ -22,9 +22,6 @@ class Worker(QtCore.QThread):
 
     def run(self):
         shell=False
-        startup_info = subprocess.STARTUPINFO()
-        startup_info.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        startup_info.wShowWindow = subprocess.SW_HIDE
         command = [
             "python",
             "app.py",
@@ -37,7 +34,7 @@ class Worker(QtCore.QThread):
         ]
 
 # Sử dụng subprocess.Popen() với tham số creationflags để ẩn cửa sổ cmd
-        subprocess_process = subprocess.Popen(command, creationflags=subprocess.CREATE_NO_WINDOW)
+        subprocess_process = subprocess.Popen(command)
   
         subprocess_process.wait()  # Chờ cho quá trình kết thúc
         self.finished.emit()

@@ -12,8 +12,6 @@ class Ui_LoginWindow(object):
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         
-
-        
         self.centralwidget.setStyleSheet("background-color: #f4f1eb;")
         
         # Label title
